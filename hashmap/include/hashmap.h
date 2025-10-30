@@ -14,8 +14,8 @@ struct Hashmap {
 };
 
 struct Node {
-    int key;
-    int value;
+    void *key;
+    void *value;
     struct Node *next;
 };
 
@@ -25,10 +25,11 @@ enum HashMapReturnValue {
 };
 
 struct Hashmap* init_hashmap(int sizeOfKey, int sizeOfValue);
-enum HashMapReturnValue put(struct Hashmap *map, int key, int value);
-enum HashMapReturnValue get(struct Hashmap *map, int key, int *res);
-enum HashMapReturnValue del(struct Hashmap *map, int key, int *res);
+enum HashMapReturnValue put(struct Hashmap *map, void *key, void *value);
+enum HashMapReturnValue get(struct Hashmap *map, void *key, void *res);
+enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res);
 struct Node* get_keys_as_array(struct Hashmap *map, int *count);
+void free_keys(struct Node* keys, int count);
 void free_hashmap(struct Hashmap *map);
 
 #endif

@@ -22,11 +22,47 @@ struct Hashmap *init_hashmap(int sizeOfKey, int sizeOfValue)
     return map;
 }
 
+void my_memcpy(void *dest, void *src, int size) {
+    char *cdest = dest;
+    char *csrc = src;
+    for(int i = 0; i < size; i++) {
+        cdest[i] = csrc[i];
+    }
+}
+
+int my_memcmp(void *a, void *b, int size) {
+    char *ca = a;
+    char *cb = b;
+    for(int i = 0; i < size; i++) {
+        if(ca[i] != cb[i])
+            return -1;
+    }
+
+    return 0;
+}
+
+struct Node *create_node(int sizeOfKey, void *key, int sizeOfValue, void *value) {
+    struct Node *new = malloc(sizeof(struct Node));
+
+    new->key = malloc(sizeOfKey);
+    my_memcpy(new->key, key, sizeOfKey);
+
+    new->value = malloc(sizeOfValue);
+    my_memcpy(new->value, value, sizeOfValue);
+    
+    new->next = NULL;
+
+    return new;
+}
+
+
 void free_node(struct Node *head) {
     struct Node *current = head;
     while (current != NULL) {
         struct Node *tmp = current;
         current = current->next;
+        free(tmp->key);
+        free(tmp->value);
         free(tmp);
     }
 }
@@ -51,16 +87,6 @@ unsigned int hash(struct Hashmap *map, void* key) {
     return hash % map->capacity;
 }
 
-struct Node* createNode(int key, int value) {
-    struct Node *new = malloc(sizeof(struct Node));
-
-    new->key = key;
-    new->value = value;
-    new->next = NULL;
-
-    return new;
-}
-
 void resize(struct Hashmap *map) {
 
     int count;
@@ -83,72 +109,69 @@ void resize(struct Hashmap *map) {
         put(map, keys[i].key, keys[i].value);
     }
 
-    free(keys);
+    free_keys(keys, count);
 }
 
-enum HashMapReturnValue put(struct Hashmap *map, int key, int value)
+enum HashMapReturnValue put(struct Hashmap *map, void *key, void *value)
 {
     if ((float)map->keyCount / map->capacity * 100 >= map->loadFactor)
         resize(map);
 
-    unsigned int hash_key = hash(map, &key);
+    unsigned int hash_key = hash(map, key);
     struct Node **current = &map->table[hash_key];
     while (*current != NULL) {
-        if ((*current)->key == key) {
-            (*current)->value = value;
-            map->keyCount++;
+        if (my_memcmp((*current)->key, key, map->sizeOfKey) == 0) {
+            my_memcpy((*current)->value, value, map->sizeOfValue);
             return SUCCESS;
         }
         current = &(*current)->next;
     }
-    *current = createNode(key, value);
+    *current = create_node(map->sizeOfKey, key, map->sizeOfValue, value);
     map->keyCount++;
 
     return SUCCESS;
 }
 
-enum HashMapReturnValue get(struct Hashmap *map, int key, int *res)
+enum HashMapReturnValue get(struct Hashmap *map, void *key, void *res)
 {
-    unsigned int hash_key = hash(map, &key);
+    unsigned int hash_key = hash(map, key);
+    struct Node *current = map->table[hash_key];
 
-    struct Node *head = map->table[hash_key];
-
-    while(head != NULL) {
-        if(head->key == key) {
+    while(current != NULL) {
+        if(my_memcmp(current->key, key, map->sizeOfKey) == 0) {
             if(res != NULL)
-                *res = head->value;
-
+                my_memcpy(res, current->value, map->sizeOfValue);
             return SUCCESS;
         }
-        head = head->next;
+        current = current->next;
     }
 
     return KEY_UNKNOW;
 }
 
-enum HashMapReturnValue del(struct Hashmap *map, int key, int *res)
+enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res)
 {
-    unsigned int hash_key = hash(map, &key);
+    unsigned int hash_key = hash(map, key);
     
     struct Node *before = NULL;
-    struct Node *head = map->table[hash_key];
+    struct Node *current = map->table[hash_key];
 
-    while(head != NULL) {
-        if(head->key == key) {
+    while(current != NULL) {
+        if(my_memcmp(current->key, key, map->sizeOfKey) == 0) {
             if(res != NULL)
-                *res = head->value;
+                my_memcpy(res, current->value, map->sizeOfValue);
 
             if(before == NULL)
-                map->table[hash_key] = head->next;
+                map->table[hash_key] = current->next;
             else
-                before->next = head->next;
+                before->next = current->next;
             
             map->keyCount--;
 
             return SUCCESS;
         }
-        before = head;
-        head = head->next;
+        before = current;
+        current = current->next;
     }
 
     return KEY_UNKNOW;
@@ -167,8 +190,12 @@ struct Node* get_keys_as_array(struct Hashmap *map, int *count)
     for (int i = 0; i < map->capacity; i++) {
         struct Node *current = map->table[i];
         while (current != NULL) {
-            res[key_count].key = current->key;
-            res[key_count].value = current->value;
+            res[key_count].key = malloc(map->sizeOfKey);
+            my_memcpy(res[key_count].key, current->key, map->sizeOfKey);
+            
+            res[key_count].value = malloc(map->sizeOfValue);
+            my_memcpy(res[key_count].value, current->value, map->sizeOfValue);
+
             res[key_count].next = NULL;
             key_count++;
             current = current->next;
@@ -176,4 +203,16 @@ struct Node* get_keys_as_array(struct Hashmap *map, int *count)
     }
 
     return res;
+}
+
+void free_keys(struct Node* keys, int count) {
+    if(keys == NULL)
+        return;
+    
+    for(int i = 0; i < count; i++) {
+        free(keys[i].key);
+        free(keys[i].value);
+    }
+
+    free(keys);
 }
