@@ -168,6 +168,10 @@ enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res)
             
             map->keyCount--;
 
+            free(current->key);
+            free(current->value);
+            free(current);
+
             return SUCCESS;
         }
         before = current;
