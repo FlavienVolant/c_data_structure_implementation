@@ -9,6 +9,8 @@ struct Hashmap {
     int loadFactor;
     int keyCount;
     struct Node **table;
+    int sizeOfKey;
+    int sizeOfValue;
 };
 
 struct Node {
@@ -22,7 +24,7 @@ enum HashMapReturnValue {
     KEY_UNKNOW = -1
 };
 
-struct Hashmap* init_hashmap();
+struct Hashmap* init_hashmap(int sizeOfKey, int sizeOfValue);
 enum HashMapReturnValue put(struct Hashmap *map, int key, int value);
 enum HashMapReturnValue get(struct Hashmap *map, int key, int *res);
 enum HashMapReturnValue del(struct Hashmap *map, int key, int *res);

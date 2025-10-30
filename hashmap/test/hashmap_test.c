@@ -6,7 +6,7 @@
 #include "c_unit.h"
 
 void* beforeEach() {
-    return init_hashmap();
+    return init_hashmap(sizeof(int), sizeof(int));
 }
 
 void afterEach(void* map) {
