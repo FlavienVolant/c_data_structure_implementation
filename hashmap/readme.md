@@ -3,7 +3,7 @@
 A hashmap implementation in C supporting arbitrary key and value types.
 
 It automatically handles collisions using linked lists and resizes when the load factor is reached.
-Memory for keys and values is managed internally: the hashmap makes copies of inserted keys and values, and frees them when the map is freed.
+Memory for keys and values is managed internally. The hashmap makes copies of inserted keys and values and frees them when the map is freed.
 
 ---
 
@@ -26,7 +26,7 @@ make clean
 
 ## API
 
-checkout `test/hashmap_test.c` for examples.
+checkout `test/hashmap_test.c` and `src/hashmap.c` for examples.
 
 ### enum HashMapReturnValue
 
