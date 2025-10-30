@@ -10,4 +10,5 @@ make test
 
 - put(key, value)
 - get(key)
-- remove(key)
+- del(key)
+- get_keys_as_array()
