@@ -23,8 +23,6 @@ int main() {
         put(map, &ids[i], &people[i]);
     }
 
-    print_hashmap(map);
-
     struct Person p;
     if (get(map, &ids[1], &p) == SUCCESS) {
         printf("Retrieved id=%d -> name=%s, age=%d\n", ids[1], p.name, p.age);
