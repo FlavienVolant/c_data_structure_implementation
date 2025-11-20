@@ -36,7 +36,7 @@ typedef struct {
 typedef enum {
     SUCCESS = 0,
     KEY_UNKNOW = -1
-} HashMapReturnValue;
+} HashMapReturnValue_e;
 
 Hashmap_t* init_hashmap(
     hash_key_f *hash, 
@@ -50,8 +50,8 @@ Hashmap_t* init_hashmap(
 void free_hashmap(Hashmap_t *map);
 
 void put(Hashmap_t *map, void *key, void *value);
-HashMapReturnValue get(Hashmap_t *map, void *key, void **res);
-HashMapReturnValue del(Hashmap_t *map, void *key, void **res);
+HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res);
+HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res);
 
 Node_t* get_keys_as_array(const Hashmap_t *map, int *count);
 void free_keys(const Hashmap_t *map, Node_t* keys, int count);

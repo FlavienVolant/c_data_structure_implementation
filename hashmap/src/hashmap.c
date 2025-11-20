@@ -109,7 +109,7 @@ void put(Hashmap_t *map, void *key, void *value) {
     map->keyCount++;
 }
 
-HashMapReturnValue get(Hashmap_t *map, void *key, void **res) {
+HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res) {
     unsigned int hash_key = hash(map, key);
     Node_t *current = map->table[hash_key];
 
@@ -125,7 +125,7 @@ HashMapReturnValue get(Hashmap_t *map, void *key, void **res) {
     return KEY_UNKNOW;
 }
 
-HashMapReturnValue del(Hashmap_t *map, void *key, void **res) {
+HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
     unsigned int hash_key = hash(map, key);
     
     Node_t *before = NULL;
