@@ -43,7 +43,7 @@ typedef enum {
 Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_ops, HashmapParams_t value_ops);
 void free_hashmap(Hashmap_t *map);
 
-void put(Hashmap_t *map, void *key, void *value);
+HashMapReturnValue_e put(Hashmap_t *map, void *key, void *value);
 HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res);
 HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res);
 

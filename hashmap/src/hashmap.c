@@ -86,22 +86,28 @@ void resize(Hashmap_t *map) {
     free_keys(map, keys, count);
 }
 
-void put(Hashmap_t *map, void *key, void *value) {
+HashMapReturnValue_e put(Hashmap_t *map, void *key, void *value) {
     if (map->keyCount >= map->loadFactor * map->capacity)
         resize(map);
 
     unsigned int hash_key = hash(map, key);
     Node_t **current = &map->table[hash_key];
+    
     while (*current != NULL) {
         if (map->key_ops.cmp_function((*current)->key, key) == 0) {
             map->value_ops.free_function((*current)->value);
             (*current)->value = map->value_ops.cpy_function(value);
-            return;
+
+            return SUCCESS;
         }
+
         current = &(*current)->next;
     }
+
     *current = create_node(map, key, value);
     map->keyCount++;
+    
+    return SUCCESS;
 }
 
 HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res) {
@@ -112,8 +118,10 @@ HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res) {
         if(map->key_ops.cmp_function(current->key, key) == 0) {
             if(res != NULL)
                 *res = current->value;
+            
             return SUCCESS;
         }
+
         current = current->next;
     }
 
