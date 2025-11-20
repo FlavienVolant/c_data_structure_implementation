@@ -137,7 +137,7 @@ HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
     while(current != NULL) {
         if(map->key_ops.cmp_function(current->key, key) == 0) {
             if(res != NULL)
-                *res = current->value;
+                *res = map->value_ops.cpy_function(current->value);
 
             if(before == NULL)
                 map->table[hash_key] = current->next;

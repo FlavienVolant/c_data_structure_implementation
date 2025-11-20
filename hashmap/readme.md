@@ -66,7 +66,7 @@ Get the value associated with a key.
 ### enum HashMapReturnValue del(struct Hashmap *map, void *key, void **res)
 Delete a key/value pair.  
 
-- `res` : optional, if not `NULL` will contain the deleted value  
+- `res` : optional, if not `NULL` will contain the deleted value. Don't forget to free res !
 - Returns `SUCCESS` if deletion succeeded, `KEY_UNKNOW` if the key does not exist
 
 ---
