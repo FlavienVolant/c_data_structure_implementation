@@ -51,7 +51,19 @@ int main() {
 
     printf("Hashmap example: int -> struct Person\n");
 
-    Hashmap_t *map = init_hashmap(hash_int, cpy_int, cmp_int, free, cpy_person, cmp_person, free);
+    HashmapParams_t key_f = {
+        .cpy_function = cpy_int,
+        .cmp_function = cmp_int,
+        .free_function = free,
+    };
+
+    HashmapParams_t value_f = {
+        .cpy_function = cpy_person,
+        .cmp_function = cmp_person,
+        .free_function = free,
+    };
+
+    Hashmap_t *map = init_hashmap(hash_int, key_f, value_f);
 
     int ids[] = {1, 2, 3};
     struct Person people[] = {

@@ -2,8 +2,7 @@
 
 #include <stdlib.h>
 
-Hashmap_t *init_hashmap(hash_key_f *hash, cpy_f *cpy_key, cmp_f *cmp_key, free_f *free_key, cpy_f *cpy_value, cmp_f *cmp_value, free_f *free_value)
-{
+Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_functions, HashmapParams_t value_functions) {
     Hashmap_t *map = malloc(sizeof(Hashmap_t));
 
     map->capacity = DEFAULT_CAPACITY;
@@ -11,13 +10,13 @@ Hashmap_t *init_hashmap(hash_key_f *hash, cpy_f *cpy_key, cmp_f *cmp_key, free_f
 
     map->hash = hash;
 
-    map->cpy_key = cpy_key;
-    map->cmp_key = cmp_key;
-    map->free_key = free_key;
+    map->cpy_key = key_functions.cpy_function;
+    map->cmp_key = key_functions.cmp_function;
+    map->free_key = key_functions.free_function;
 
-    map->cpy_value = cpy_value;
-    map->cmp_value = cmp_value;
-    map->free_value = free_value;
+    map->cpy_value = value_functions.cpy_function;
+    map->cmp_value = value_functions.cmp_function;
+    map->free_value = value_functions.free_function;
 
     map->keyCount = 0;
     map->table = malloc(sizeof(Node_t*) * map->capacity);
@@ -51,7 +50,8 @@ void free_node(const Hashmap_t *map, Node_t *head) {
     }
 }
 
-void free_hashmap(Hashmap_t *map){
+void free_hashmap(Hashmap_t *map)
+{
     for(int i = 0; i < map->capacity; i++) {
         free_node(map, map->table[i]);
     }
