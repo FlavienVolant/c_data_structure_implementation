@@ -2,8 +2,8 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude
 CFLAGSTEST = -Wall -Wextra -Iinclude -I../c_unit/include
-SRC = src/main.c src/hashmap.c
-TESTSRC = test/hashmap_test.c src/hashmap.c ../c_unit/src/c_unit.c
+SRC = src/main.c src/hashmap.c src/hashmap_types.c
+TESTSRC = test/hashmap_test.c src/hashmap.c src/hashmap_types.c ../c_unit/src/c_unit.c
 
 .PHONY: all run clean test test_debug
 

@@ -26,9 +26,11 @@ typedef struct {
     int capacity;
     int loadFactor;
     int keyCount;
+
     Node_t **table;
     
     hash_key_f* hash;
+    
     HashmapParams_t key_ops;
     HashmapParams_t value_ops;
 } Hashmap_t;

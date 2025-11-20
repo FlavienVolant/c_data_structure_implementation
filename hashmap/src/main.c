@@ -2,16 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hashmap.h"
+#include "hashmap_types.h"
 
 struct Person {
     char name[32];
     int age;
 };
-
-unsigned int hash_int(void* k){
-    unsigned int *key = k;
-    return *key;
-}
 
 void* cpy_person(void *p) {
     struct Person *src = p;
@@ -31,31 +27,9 @@ int cmp_person(void *a, void *b) {
             p_a->age == p_b->age) ? 0 : 1; 
 }
 
-void *cpy_int(void *i){
-    int *src = i;
-    int *cpy = malloc(sizeof(int));
-
-    *cpy = *src;
-
-    return cpy;
-}
-
-int cmp_int(void*a, void *b) {
-    int *i_a = a;
-    int *i_b = b;
-
-    return (*i_a == *i_b) ? 0 : 1;
-}
-
 int main() {
 
     printf("Hashmap example: int -> struct Person\n");
-
-    HashmapParams_t key_f = {
-        .cpy_function = cpy_int,
-        .cmp_function = cmp_int,
-        .free_function = free,
-    };
 
     HashmapParams_t value_f = {
         .cpy_function = cpy_person,
@@ -63,7 +37,7 @@ int main() {
         .free_function = free,
     };
 
-    Hashmap_t *map = init_hashmap(hash_int, key_f, value_f);
+    Hashmap_t *map = init_hashmap(hash_int, INT_PARAMS, value_f);
 
     int ids[] = {1, 2, 3};
     struct Person people[] = {
