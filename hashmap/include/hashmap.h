@@ -17,20 +17,20 @@ typedef struct Node {
 } Node_t;
 
 typedef struct {
+    cpy_f *cpy_function;
+    cmp_f *cmp_function;
+    free_f *free_function;
+} HashmapParams_t;
+
+typedef struct {
     int capacity;
     int loadFactor;
     int keyCount;
     Node_t **table;
     
     hash_key_f* hash;
-    
-    cpy_f *cpy_key;
-    cmp_f *cmp_key;
-    free_f *free_key;
-
-    cpy_f *cpy_value;
-    cmp_f *cmp_value;
-    free_f *free_value;
+    HashmapParams_t key_ops;
+    HashmapParams_t value_ops;
 } Hashmap_t;
 
 typedef enum {
@@ -38,13 +38,7 @@ typedef enum {
     KEY_UNKNOW = -1
 } HashMapReturnValue_e;
 
-typedef struct {
-    cpy_f *cpy_function;
-    cmp_f *cmp_function;
-    free_f *free_function;
-} HashmapParams_t;
-
-Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_functions, HashmapParams_t value_functions);
+Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_ops, HashmapParams_t value_ops);
 void free_hashmap(Hashmap_t *map);
 
 void put(Hashmap_t *map, void *key, void *value);

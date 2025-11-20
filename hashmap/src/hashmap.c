@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_functions, HashmapParams_t value_functions) {
+Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_ops, HashmapParams_t value_ops) {
     Hashmap_t *map = malloc(sizeof(Hashmap_t));
 
     map->capacity = DEFAULT_CAPACITY;
@@ -10,13 +10,8 @@ Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_functions, Hashmap
 
     map->hash = hash;
 
-    map->cpy_key = key_functions.cpy_function;
-    map->cmp_key = key_functions.cmp_function;
-    map->free_key = key_functions.free_function;
-
-    map->cpy_value = value_functions.cpy_function;
-    map->cmp_value = value_functions.cmp_function;
-    map->free_value = value_functions.free_function;
+    map->key_ops = key_ops;
+    map->value_ops = value_ops;
 
     map->keyCount = 0;
     map->table = malloc(sizeof(Node_t*) * map->capacity);
@@ -31,8 +26,8 @@ Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_functions, Hashmap
 Node_t *create_node(const Hashmap_t *map, void *key, void *value) {
     Node_t *node = malloc(sizeof(Node_t));
 
-    node->key = map->cpy_key(key);
-    node->value = map->cpy_value(value);
+    node->key = map->key_ops.cpy_function(key);
+    node->value = map->value_ops.cpy_function(value);
     node->next = NULL;
 
     return node;
@@ -44,8 +39,8 @@ void free_node(const Hashmap_t *map, Node_t *head) {
     while (current != NULL) {
         Node_t *tmp = current;
         current = current->next;
-        map->free_key(tmp->key);
-        map->free_value(tmp->value);
+        map->key_ops.free_function(tmp->key);
+        map->value_ops.free_function(tmp->value);
         free(tmp);
     }
 }
@@ -98,9 +93,9 @@ void put(Hashmap_t *map, void *key, void *value) {
     unsigned int hash_key = hash(map, key);
     Node_t **current = &map->table[hash_key];
     while (*current != NULL) {
-        if (map->cmp_key((*current)->key, key) == 0) {
-            map->free_value((*current)->value);
-            (*current)->value = map->cpy_value(value);
+        if (map->key_ops.cmp_function((*current)->key, key) == 0) {
+            map->value_ops.free_function((*current)->value);
+            (*current)->value = map->value_ops.cpy_function(value);
             return;
         }
         current = &(*current)->next;
@@ -114,7 +109,7 @@ HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res) {
     Node_t *current = map->table[hash_key];
 
     while(current != NULL) {
-        if(map->cmp_key(current->key, key) == 0) {
+        if(map->key_ops.cmp_function(current->key, key) == 0) {
             if(res != NULL)
                 *res = current->value;
             return SUCCESS;
@@ -132,7 +127,7 @@ HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
     Node_t *current = map->table[hash_key];
 
     while(current != NULL) {
-        if(map->cmp_key(current->key, key) == 0) {
+        if(map->key_ops.cmp_function(current->key, key) == 0) {
             if(res != NULL)
                 *res = current->value;
 
@@ -143,8 +138,8 @@ HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
             
             map->keyCount--;
 
-            map->free_key(current->key);
-            map->free_value(current->value);
+            map->key_ops.free_function(current->key);
+            map->value_ops.free_function(current->value);
             free(current);
 
             return SUCCESS;
@@ -169,8 +164,8 @@ Node_t* get_keys_as_array(const Hashmap_t *map, int *count) {
     for (int i = 0; i < map->capacity; i++) {
         Node_t *current = map->table[i];
         while (current != NULL) {
-            res[key_count].key = map->cpy_key(current->key);
-            res[key_count].value = map->cpy_value(current->value);
+            res[key_count].key = map->key_ops.cpy_function(current->key);
+            res[key_count].value = map->value_ops.cpy_function(current->value);
             res[key_count].next = NULL;
             key_count++;
             current = current->next;
@@ -185,8 +180,8 @@ void free_keys(const Hashmap_t *map, Node_t* keys, int count) {
         return;
     
     for(int i = 0; i < count; i++) {
-        map->free_key(keys[i].key);
-        map->free_value(keys[i].value);
+        map->key_ops.free_function(keys[i].key);
+        map->value_ops.free_function(keys[i].value);
     }
 
     free(keys);
