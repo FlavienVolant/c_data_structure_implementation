@@ -29,7 +29,7 @@ Node_t *create_node(const Hashmap_t *map, void *key, void *value) {
     return node;
 }
 
-void free_node(const Hashmap_t *map, Node_t *head) {
+void free_nodes(const Hashmap_t *map, Node_t *head) {
     Node_t *current = head;
 
     while (current != NULL) {
@@ -41,10 +41,9 @@ void free_node(const Hashmap_t *map, Node_t *head) {
     }
 }
 
-void free_hashmap(Hashmap_t *map)
-{
+void free_hashmap(Hashmap_t *map){
     for(int i = 0; i < map->capacity; i++) {
-        free_node(map, map->table[i]);
+        free_nodes(map, map->table[i]);
     }
     free(map->table);
     free(map);
@@ -55,8 +54,6 @@ unsigned int hash(const Hashmap_t *map, void *key) {
 }
 
 void resize(Hashmap_t *map) {
-
-    return;
 
     int count;
     Node_t *keys = get_keys_as_array(map, &count);
@@ -70,17 +67,15 @@ void resize(Hashmap_t *map) {
 
     for(int i = 0; i < count; i++) {
         put(map, keys[i].key, keys[i].value);
-        map->key_ops.free_function(keys[i].key);
-        map->value_ops.free_function(keys[i].value);
     }
 
-    free(keys);
+    free_keys(map, keys, count);
 
     for(int i = 0; i < old_capacity; i++) {
-        free_node(map, old_table[i]);
+        free_nodes(map, old_table[i]);
     }
-
-    free(old_table);   
+    
+    free(old_table);
 }
 
 HashMapReturnValue_e put(Hashmap_t *map, void *key, void *value) {

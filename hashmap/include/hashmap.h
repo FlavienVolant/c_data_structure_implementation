@@ -24,7 +24,7 @@ typedef struct {
 
 typedef struct {
     int capacity;
-    int loadFactor;
+    float loadFactor;
     int keyCount;
 
     Node_t **table;
