@@ -79,6 +79,7 @@ void resize(Hashmap_t *map) {
     for(int i = 0; i < old_capacity; i++) {
         free_node(map, old_table[i]);
     }
+
     free(old_table);   
 }
 
@@ -132,9 +133,6 @@ HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
 
     while(current != NULL) {
         if(map->key_ops.cmp_function(current->key, key) == 0) {
-            if(res != NULL)
-                *res = map->value_ops.cpy_function(current->value);
-
             if(before == NULL)
                 map->table[hash_key] = current->next;
             else
@@ -142,8 +140,11 @@ HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
             
             map->keyCount--;
 
+            if(res != NULL)
+                *res = current->value;
+            else 
+                map->value_ops.free_function(current->value);
             map->key_ops.free_function(current->key);
-            map->value_ops.free_function(current->value);
             free(current);
 
             return SUCCESS;
