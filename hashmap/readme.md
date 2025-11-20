@@ -55,18 +55,18 @@ If the key exists, its value is updated.
 
 ---
 
-### enum HashMapReturnValue get(struct Hashmap *map, void *key, void *res)
+### enum HashMapReturnValue get(struct Hashmap *map, void *key, void **res)
 Get the value associated with a key.  
 
-- `res` : pointer to a buffer to store the value  
+- `res` : optional, if not `NULL` will contain the value, the value is owned by the map. Do not free ! Do not update ! Stop using it after a put/del !
 - Returns `SUCCESS` if found, `KEY_UNKNOW` otherwise
 
 ---
 
-### enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res)
+### enum HashMapReturnValue del(struct Hashmap *map, void *key, void **res)
 Delete a key/value pair.  
 
-- `res` : optional, if not `NULL` will contain the deleted value  
+- `res` : optional, if not `NULL` will contain the deleted value. Don't forget to free res !
 - Returns `SUCCESS` if deletion succeeded, `KEY_UNKNOW` if the key does not exist
 
 ---

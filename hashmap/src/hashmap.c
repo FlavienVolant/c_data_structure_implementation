@@ -2,165 +2,132 @@
 
 #include <stdlib.h>
 
-struct Hashmap *init_hashmap(int sizeOfKey, int sizeOfValue)
-{
-    struct Hashmap *map = malloc(sizeof(struct Hashmap));
+Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_ops, HashmapParams_t value_ops) {
+    Hashmap_t *map = malloc(sizeof(Hashmap_t));
 
     map->capacity = DEFAULT_CAPACITY;
     map->loadFactor = DEFAULT_LOAD_FACTOR;
 
-    map->sizeOfKey = sizeOfKey;
-    map->sizeOfValue = sizeOfValue;
+    map->hash = hash;
+
+    map->key_ops = key_ops;
+    map->value_ops = value_ops;
 
     map->keyCount = 0;
-    map->table = malloc(sizeof(struct Node*) * map->capacity);
-    
-    for(int i = 0; i < map->capacity; i++) {
-        map->table[i] = NULL;
-    }
-    
+    map->table = calloc(map->capacity, sizeof(Node_t*));
+
     return map;
 }
 
-void my_memcpy(void *dest, void *src, int size) {
-    char *cdest = dest;
-    char *csrc = src;
-    for(int i = 0; i < size; i++) {
-        cdest[i] = csrc[i];
-    }
+Node_t *create_node(const Hashmap_t *map, void *key, void *value) {
+    Node_t *node = malloc(sizeof(Node_t));
+
+    node->key = map->key_ops.cpy_function(key);
+    node->value = map->value_ops.cpy_function(value);
+    node->next = NULL;
+
+    return node;
 }
 
-int my_memcmp(void *a, void *b, int size) {
-    char *ca = a;
-    char *cb = b;
-    for(int i = 0; i < size; i++) {
-        if(ca[i] != cb[i])
-            return -1;
-    }
+void free_nodes(const Hashmap_t *map, Node_t *head) {
+    Node_t *current = head;
 
-    return 0;
-}
-
-struct Node *create_node(int sizeOfKey, void *key, int sizeOfValue, void *value) {
-    struct Node *new = malloc(sizeof(struct Node));
-
-    new->key = malloc(sizeOfKey);
-    my_memcpy(new->key, key, sizeOfKey);
-
-    new->value = malloc(sizeOfValue);
-    my_memcpy(new->value, value, sizeOfValue);
-    
-    new->next = NULL;
-
-    return new;
-}
-
-
-void free_node(struct Node *head) {
-    struct Node *current = head;
     while (current != NULL) {
-        struct Node *tmp = current;
+        Node_t *tmp = current;
         current = current->next;
-        free(tmp->key);
-        free(tmp->value);
+        map->key_ops.free_function(tmp->key);
+        map->value_ops.free_function(tmp->value);
         free(tmp);
     }
 }
 
-void free_hashmap(struct Hashmap *map)
-{
+void free_hashmap(Hashmap_t *map){
     for(int i = 0; i < map->capacity; i++) {
-        free_node(map->table[i]);
+        free_nodes(map, map->table[i]);
     }
     free(map->table);
     free(map);
 }
 
-unsigned int hash(struct Hashmap *map, void* key) {
-    // DJB2
-    unsigned char *bytes = key;
-    unsigned int hash = 5381;
-    for(int i = 0; i < map->sizeOfKey; i++) {
-        hash = ((hash << 5) + hash) + bytes[i];
-    } 
-
-    return hash % map->capacity;
+unsigned int hash(const Hashmap_t *map, void *key) {
+    return map->hash(key) % map->capacity;
 }
 
-void resize(struct Hashmap *map) {
+void resize(Hashmap_t *map) {
 
     int count;
-    struct Node *keys = get_keys_as_array(map, &count);
+    Node_t *keys = get_keys_as_array(map, &count);
 
-    for(int i = 0; i < map->capacity; i++) {
-        free_node(map->table[i]);
-    }
+    Node_t **old_table = map->table;
+    int old_capacity = map->capacity;
 
     map->capacity *= 2;
-    map->table = realloc(map->table, sizeof(struct Node *) * map->capacity);
-
-    for(int i = 0; i < map->capacity; i++) {
-        map->table[i] = NULL;
-    }
-
+    map->table = calloc(map->capacity, sizeof(Node_t*));
     map->keyCount = 0;
 
     for(int i = 0; i < count; i++) {
         put(map, keys[i].key, keys[i].value);
     }
 
-    free_keys(keys, count);
+    free_keys(map, keys, count);
+
+    for(int i = 0; i < old_capacity; i++) {
+        free_nodes(map, old_table[i]);
+    }
+    
+    free(old_table);
 }
 
-enum HashMapReturnValue put(struct Hashmap *map, void *key, void *value)
-{
-    if ((float)map->keyCount / map->capacity * 100 >= map->loadFactor)
+HashMapReturnValue_e put(Hashmap_t *map, void *key, void *value) {
+    if (map->keyCount >= map->loadFactor * map->capacity)
         resize(map);
 
     unsigned int hash_key = hash(map, key);
-    struct Node **current = &map->table[hash_key];
+    Node_t **current = &map->table[hash_key];
+    
     while (*current != NULL) {
-        if (my_memcmp((*current)->key, key, map->sizeOfKey) == 0) {
-            my_memcpy((*current)->value, value, map->sizeOfValue);
+        if (map->key_ops.cmp_function((*current)->key, key) == 0) {
+            map->value_ops.free_function((*current)->value);
+            (*current)->value = map->value_ops.cpy_function(value);
+
             return SUCCESS;
         }
+
         current = &(*current)->next;
     }
-    *current = create_node(map->sizeOfKey, key, map->sizeOfValue, value);
-    map->keyCount++;
 
+    *current = create_node(map, key, value);
+    map->keyCount++;
+    
     return SUCCESS;
 }
 
-enum HashMapReturnValue get(struct Hashmap *map, void *key, void *res)
-{
+HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res) {
     unsigned int hash_key = hash(map, key);
-    struct Node *current = map->table[hash_key];
+    Node_t *current = map->table[hash_key];
 
     while(current != NULL) {
-        if(my_memcmp(current->key, key, map->sizeOfKey) == 0) {
+        if(map->key_ops.cmp_function(current->key, key) == 0) {
             if(res != NULL)
-                my_memcpy(res, current->value, map->sizeOfValue);
+                *res = current->value;
+            
             return SUCCESS;
         }
+
         current = current->next;
     }
 
     return KEY_UNKNOW;
 }
 
-enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res)
-{
+HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
     unsigned int hash_key = hash(map, key);
     
-    struct Node *before = NULL;
-    struct Node *current = map->table[hash_key];
+    Node_t *before = NULL;
+    Node_t *current = map->table[hash_key];
 
     while(current != NULL) {
-        if(my_memcmp(current->key, key, map->sizeOfKey) == 0) {
-            if(res != NULL)
-                my_memcpy(res, current->value, map->sizeOfValue);
-
+        if(map->key_ops.cmp_function(current->key, key) == 0) {
             if(before == NULL)
                 map->table[hash_key] = current->next;
             else
@@ -168,12 +135,16 @@ enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res)
             
             map->keyCount--;
 
-            free(current->key);
-            free(current->value);
+            if(res != NULL)
+                *res = current->value;
+            else 
+                map->value_ops.free_function(current->value);
+            map->key_ops.free_function(current->key);
             free(current);
 
             return SUCCESS;
         }
+
         before = current;
         current = current->next;
     }
@@ -181,25 +152,20 @@ enum HashMapReturnValue del(struct Hashmap *map, void *key, void *res)
     return KEY_UNKNOW;
 }
 
-struct Node* get_keys_as_array(struct Hashmap *map, int *count)
-{
+Node_t* get_keys_as_array(const Hashmap_t *map, int *count) {
     *count = map->keyCount;
 
     if(map->keyCount == 0)
         return NULL;
 
-    struct Node *res = malloc(sizeof(struct Node) * map->keyCount);
+    Node_t *res = malloc(sizeof(Node_t) * map->keyCount);
 
     int key_count = 0;
     for (int i = 0; i < map->capacity; i++) {
-        struct Node *current = map->table[i];
+        Node_t *current = map->table[i];
         while (current != NULL) {
-            res[key_count].key = malloc(map->sizeOfKey);
-            my_memcpy(res[key_count].key, current->key, map->sizeOfKey);
-            
-            res[key_count].value = malloc(map->sizeOfValue);
-            my_memcpy(res[key_count].value, current->value, map->sizeOfValue);
-
+            res[key_count].key = map->key_ops.cpy_function(current->key);
+            res[key_count].value = map->value_ops.cpy_function(current->value);
             res[key_count].next = NULL;
             key_count++;
             current = current->next;
@@ -209,13 +175,13 @@ struct Node* get_keys_as_array(struct Hashmap *map, int *count)
     return res;
 }
 
-void free_keys(struct Node* keys, int count) {
+void free_keys(const Hashmap_t *map, Node_t* keys, int count) {
     if(keys == NULL)
         return;
     
     for(int i = 0; i < count; i++) {
-        free(keys[i].key);
-        free(keys[i].value);
+        map->key_ops.free_function(keys[i].key);
+        map->value_ops.free_function(keys[i].value);
     }
 
     free(keys);
