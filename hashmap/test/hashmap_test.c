@@ -90,7 +90,6 @@ int del_on_unknown_key_do_nothing(void *params) {
 
     ASSERT_EQUALS(del(map, &key, (void**)&res), KEY_UNKNOW);
     ASSERT_EQUALS(*res, 123);
-
     return 0;
 }
 
@@ -121,6 +120,7 @@ int insert_and_delete_multiple_keys(void *params) {
     for (int i = 0; i < 3; ++i) {
         ASSERT_EQUALS(del(map, &i, (void**)&res), SUCCESS);
         ASSERT_EQUALS(*res, i);
+        map->value_ops.free_function(res);
         ASSERT_EQUALS(get(map, &i, NULL), KEY_UNKNOW);
     }
 
@@ -214,6 +214,7 @@ int put_string_key_put_get_delete_value(void *params) {
     int *del_res;
     ASSERT_EQUALS(del(map, "two", (void**)&del_res), SUCCESS);
     ASSERT_EQUALS(*del_res, 20);
+    map->value_ops.free_function(del_res);
     ASSERT_EQUALS(get(map, "two", NULL), KEY_UNKNOW);
 
     return 0;
@@ -301,6 +302,7 @@ int put_struct_key_and_value(void *params) {
     ASSERT_EQUALS(del(map, &keys[1], (void**)&del_res), SUCCESS);
     ASSERT_EQUALS(del_res->width, 30);
     ASSERT_EQUALS(del_res->height, 40);
+    map->value_ops.free_function(del_res);
     ASSERT_EQUALS(get(map, &keys[1], NULL), KEY_UNKNOW);
 
     return 0;
