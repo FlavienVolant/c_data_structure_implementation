@@ -2,13 +2,19 @@
 #define HASHMAP_H
 
 #define DEFAULT_CAPACITY 256
-#define DEFAULT_LOAD_FACTOR 75
+#define DEFAULT_LOAD_FACTOR 0.75f
 
-typedef unsigned int (hash_f(const void* key));
+typedef unsigned int (hash_key_f(void* key));
 
-typedef void* (cpy_f(const void *a));
-typedef int (cmp_f(const void *a, const void *b));
+typedef void* (cpy_f(void *a));
+typedef int (cmp_f(void *a, void *b));
 typedef void (free_f(void *a));
+
+typedef struct Node {
+    void *key;
+    void *value;
+    struct Node *next;
+} Node_t;
 
 typedef struct {
     int capacity;
@@ -16,7 +22,7 @@ typedef struct {
     int keyCount;
     Node_t **table;
     
-    hash_f* hash;
+    hash_key_f* hash;
     
     cpy_f *cpy_key;
     cmp_f *cmp_key;
@@ -27,19 +33,13 @@ typedef struct {
     free_f *free_value;
 } Hashmap_t;
 
-typedef struct {
-    void *key;
-    void *value;
-    Node_t *next;
-} Node_t;
-
 typedef enum {
     SUCCESS = 0,
     KEY_UNKNOW = -1
 } HashMapReturnValue;
 
 Hashmap_t* init_hashmap(
-    hash_f *hash, 
+    hash_key_f *hash, 
     cpy_f *cpy_key,
     cmp_f *cmp_key,
     free_f *free_key,
@@ -49,7 +49,7 @@ Hashmap_t* init_hashmap(
 
 void free_hashmap(Hashmap_t *map);
 
-HashMapReturnValue put(Hashmap_t *map, void *key, void *value);
+void put(Hashmap_t *map, void *key, void *value);
 HashMapReturnValue get(Hashmap_t *map, void *key, void **res);
 HashMapReturnValue del(Hashmap_t *map, void *key, void **res);
 

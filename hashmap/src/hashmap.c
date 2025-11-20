@@ -2,20 +2,22 @@
 
 #include <stdlib.h>
 
-Hashmap_t *init_hashmap(hash_f *hash, cpy_f *cpy_key, cmp_f *cmp_key, free_f *free_key, cpy_f *cpy_value, cmp_f *cmp_value, free_f *free_value)
+Hashmap_t *init_hashmap(hash_key_f *hash, cpy_f *cpy_key, cmp_f *cmp_key, free_f *free_key, cpy_f *cpy_value, cmp_f *cmp_value, free_f *free_value)
 {
     Hashmap_t *map = malloc(sizeof(Hashmap_t));
 
     map->capacity = DEFAULT_CAPACITY;
     map->loadFactor = DEFAULT_LOAD_FACTOR;
 
+    map->hash = hash;
+
     map->cpy_key = cpy_key;
     map->cmp_key = cmp_key;
     map->free_key = free_key;
 
     map->cpy_value = cpy_value;
-    map->cmp_key = cmp_key;
-    map->free_key = free_key;
+    map->cmp_value = cmp_value;
+    map->free_value = free_value;
 
     map->keyCount = 0;
     map->table = malloc(sizeof(Node_t*) * map->capacity);
@@ -27,14 +29,14 @@ Hashmap_t *init_hashmap(hash_f *hash, cpy_f *cpy_key, cmp_f *cmp_key, free_f *fr
     return map;
 }
 
-Node_t *create_node(const Hashmap_t *map, const void *key, const void *value) {
-    Node_t *new = malloc(sizeof(Node_t));
+Node_t *create_node(const Hashmap_t *map, void *key, void *value) {
+    Node_t *node = malloc(sizeof(Node_t));
 
-    new->key = map->cpy_key(key);
-    new->value = map->cpy_value(value);
-    new->next = NULL;
+    node->key = map->cpy_key(key);
+    node->value = map->cpy_value(value);
+    node->next = NULL;
 
-    return new;
+    return node;
 }
 
 void free_node(const Hashmap_t *map, Node_t *head) {
@@ -57,7 +59,7 @@ void free_hashmap(Hashmap_t *map){
     free(map);
 }
 
-unsigned int hash(Hashmap_t *map, void *key) {
+unsigned int hash(const Hashmap_t *map, void *key) {
     return map->hash(key) % map->capacity;
 }
 
@@ -71,7 +73,10 @@ void resize(Hashmap_t *map) {
     }
 
     map->capacity *= 2;
-    map->table = realloc(map->table, sizeof(Node_t *) * map->capacity);
+    Node_t **tmp = realloc(map->table, sizeof(Node_t *) * map->capacity);
+    if(!tmp)
+        return;
+    map->table = tmp;
 
     for(int i = 0; i < map->capacity; i++) {
         map->table[i] = NULL;
@@ -86,8 +91,8 @@ void resize(Hashmap_t *map) {
     free_keys(map, keys, count);
 }
 
-HashMapReturnValue put(Hashmap_t *map, void *key, void *value) {
-    if ((float)map->keyCount / map->capacity * 100 >= map->loadFactor)
+void put(Hashmap_t *map, void *key, void *value) {
+    if (map->keyCount >= map->loadFactor * map->capacity)
         resize(map);
 
     unsigned int hash_key = hash(map, key);
@@ -96,14 +101,12 @@ HashMapReturnValue put(Hashmap_t *map, void *key, void *value) {
         if (map->cmp_key((*current)->key, key) == 0) {
             map->free_value((*current)->value);
             (*current)->value = map->cpy_value(value);
-            return SUCCESS;
+            return;
         }
         current = &(*current)->next;
     }
     *current = create_node(map, key, value);
     map->keyCount++;
-
-    return SUCCESS;
 }
 
 HashMapReturnValue get(Hashmap_t *map, void *key, void **res) {
@@ -113,7 +116,7 @@ HashMapReturnValue get(Hashmap_t *map, void *key, void **res) {
     while(current != NULL) {
         if(map->cmp_key(current->key, key) == 0) {
             if(res != NULL)
-                *res = map->cpy_value(current->value);
+                *res = current->value;
             return SUCCESS;
         }
         current = current->next;
@@ -131,7 +134,7 @@ HashMapReturnValue del(Hashmap_t *map, void *key, void **res) {
     while(current != NULL) {
         if(map->cmp_key(current->key, key) == 0) {
             if(res != NULL)
-                *res = map->cpy_value(current->value);
+                *res = current->value;
 
             if(before == NULL)
                 map->table[hash_key] = current->next;
