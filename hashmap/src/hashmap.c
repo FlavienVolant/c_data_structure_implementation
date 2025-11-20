@@ -14,11 +14,7 @@ Hashmap_t* init_hashmap(hash_key_f *hash, HashmapParams_t key_ops, HashmapParams
     map->value_ops = value_ops;
 
     map->keyCount = 0;
-    map->table = malloc(sizeof(Node_t*) * map->capacity);
-    
-    for(int i = 0; i < map->capacity; i++) {
-        map->table[i] = NULL;
-    }
+    map->table = calloc(map->capacity, sizeof(Node_t*));
 
     return map;
 }
@@ -60,30 +56,30 @@ unsigned int hash(const Hashmap_t *map, void *key) {
 
 void resize(Hashmap_t *map) {
 
+    return;
+
     int count;
     Node_t *keys = get_keys_as_array(map, &count);
 
-    for(int i = 0; i < map->capacity; i++) {
-        free_node(map, map->table[i]);
-    }
+    Node_t **old_table = map->table;
+    int old_capacity = map->capacity;
 
     map->capacity *= 2;
-    Node_t **tmp = realloc(map->table, sizeof(Node_t *) * map->capacity);
-    if(!tmp)
-        return;
-    map->table = tmp;
-
-    for(int i = 0; i < map->capacity; i++) {
-        map->table[i] = NULL;
-    }
-
+    map->table = calloc(map->capacity, sizeof(Node_t*));
     map->keyCount = 0;
 
     for(int i = 0; i < count; i++) {
         put(map, keys[i].key, keys[i].value);
+        map->key_ops.free_function(keys[i].key);
+        map->value_ops.free_function(keys[i].value);
     }
 
-    free_keys(map, keys, count);
+    free(keys);
+
+    for(int i = 0; i < old_capacity; i++) {
+        free_node(map, old_table[i]);
+    }
+    free(old_table);   
 }
 
 HashMapReturnValue_e put(Hashmap_t *map, void *key, void *value) {
