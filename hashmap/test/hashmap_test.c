@@ -149,6 +149,27 @@ int stress_test_many_insertions(void *params) {
     return 0;
 }
 
+
+int insert_many_keys_with_identical_cstring_content_but_different_addresses(void *params) {
+    Hashmap_t *map = params;
+    map->key_ops = CSTRING_PARAMS;
+
+    const int N = 1000;
+    char buffer[N][32];
+    int *res;
+
+    for(int i = 0; i < N; i++) {
+        snprintf(buffer[i], sizeof(buffer[i]), "My text");
+        ASSERT_EQUALS(put(map, buffer[i], &i), SUCCESS);
+    }
+    
+    char *key = "My text";
+    ASSERT_EQUALS(get(map, key, (void**)&res), SUCCESS);
+    ASSERT_EQUALS(*res, N-1);
+
+    return 0;
+}
+
 int get_keys_return_all_keys(void *params) {
     Hashmap_t *map = params;
     int keys_to_insert[] = {5, -3, 42, 0, 9999};
@@ -322,6 +343,7 @@ int main() {
     ADD_TEST(tests, get_keys_return_all_keys);
     ADD_TEST(tests, get_keys_empty_map);
     ADD_TEST(tests, stress_test_many_insertions);
+    ADD_TEST(tests, insert_many_keys_with_identical_cstring_content_but_different_addresses);
     ADD_TEST(tests, put_string_key_put_get_delete_value);
     ADD_TEST(tests, put_struct_key_and_value);
 
