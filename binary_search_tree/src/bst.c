@@ -15,6 +15,11 @@ void init_bst(BST_t *root, int key, int value){
 }
 
 void free_bst(BST_t *root){
+    if(root == NULL)
+        return;
+    
+    free_bst(root->left);
+    free_bst(root->right);
     free(root);
 }
 
