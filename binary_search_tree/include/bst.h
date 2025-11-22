@@ -9,10 +9,10 @@ typedef struct BST {
 } BST_t;
 
 BST_t *create_bst(int key, int value);
-void init_bst(BST_t *bst, int key, int value);
-void free_bst(BST_t *bst);
+void init_bst(BST_t *root, int key, int value);
+void free_bst(BST_t *root);
 
-void insert(BST_t *bst, int key, int value);
-int find_value(const BST_t *bst, int key, int* value);
+BST_t *insert(BST_t *root, int key, int value);
+int find_value(const BST_t *root, int key, int* value);
 
 #endif
