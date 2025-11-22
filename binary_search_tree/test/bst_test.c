@@ -15,6 +15,8 @@ int create_bst_create_a_tree_with_the_root_specified(void *params) {
 
     ASSERT_EQUALS(tree->key, 5);
     ASSERT_EQUALS(tree->value, 5);
+    ASSERT_NULL(tree->left);
+    ASSERT_NULL(tree->right);
 
     return 0;
 }
@@ -27,6 +29,19 @@ int insert_lower_key_value_than_root_should_create_a_subtree_left(void *params) 
     ASSERT_NOT_NULL(tree->left);
     ASSERT_EQUALS(tree->left->key, 4);
     ASSERT_EQUALS(tree->left->value, 4);
+    ASSERT_NULL(tree->right);
+
+    return 0;
+}
+
+int insert_higher_key_value_than_root_should_create_a_subtree_right(void *params) {
+    BST_t *tree = params;
+
+    insert(tree, 6, 6);
+
+    ASSERT_NOT_NULL(tree->right);
+    ASSERT_EQUALS(tree->right->key, 6);
+    ASSERT_EQUALS(tree->right->value, 6);
 
     return 0;
 }
