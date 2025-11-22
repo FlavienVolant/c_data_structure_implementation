@@ -46,12 +46,22 @@ int insert_higher_key_value_than_root_should_create_a_subtree_right(void *params
     return 0;
 }
 
+int find_value_in_a_just_create_bst_should_find_the_root_specified(void *params) {
+    BST_t *tree = params;
+    int res;
+    ASSERT_TRUE(find_value(tree, 5, &res) == 0);
+    ASSERT_EQUALS(res, 5);
+
+    return 0;
+}
+
 int main() {
     struct TestList *tests = create_test_list();
 
     ADD_TEST(tests, create_bst_create_a_tree_with_the_root_specified);
     ADD_TEST(tests, insert_lower_key_value_than_root_should_create_a_subtree_left);
     ADD_TEST(tests, insert_higher_key_value_than_root_should_create_a_subtree_right);
+    ADD_TEST(tests, find_value_in_a_just_create_bst_should_find_the_root_specified);
 
     run_tests(tests, beforeEach, afterEach);
     free_test_list(tests);

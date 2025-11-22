@@ -1,11 +1,11 @@
 #ifndef BST_H_INCLUDED
 #define BST_H_INCLUDED
 
-typedef struct BST {
+typedef struct __BST {
     int key;
     int value;
-    struct BST *left;
-    struct BST *right;
+    struct __BST *left;
+    struct __BST *right;
 } BST_t;
 
 BST_t *create_bst(int key, int value);
