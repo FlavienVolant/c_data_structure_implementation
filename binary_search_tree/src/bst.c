@@ -28,7 +28,9 @@ BST_t *insert(BST_t *root, int key, int value){
     if(root == NULL)
         return create_bst(key, value);
 
-    if(key <= root->key)
+    if(key == root->key)
+        root->value = value;
+    if(key < root->key)
         root->left = insert(root->left, key, value);
     else
         root->right = insert(root->right, key, value);

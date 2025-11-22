@@ -49,6 +49,7 @@ int insert_higher_key_value_than_root_should_create_a_subtree_right(void *params
 int find_value_in_a_just_create_bst_should_find_the_root_specified(void *params) {
     BST_t *tree = params;
     int res;
+    
     ASSERT_TRUE(find_value(tree, 5, &res) == 0);
     ASSERT_EQUALS(res, 5);
 
@@ -62,14 +63,30 @@ int find_value_after_insert(void *params) {
     int keys[] = {1, 2, 3, 4, 6, 7, 8, 9, 10};
     int values[] = {1, 4, 8, 16, 32, 64, 128, 256, 512};
 
-    for(int i = 0; i < sizeof(keys)/sizeof(int); i ++) {
+    for(int i = 0; i < 9; i ++) {
         insert(tree, keys[i], values[i]);
     } 
     
-    for(int i = 0; i < sizeof(keys)/sizeof(int); i ++) {
+    for(int i = 0; i < 9; i ++) {
         ASSERT_TRUE(find_value(tree, keys[i], &res) == 0);
         ASSERT_EQUALS(res, values[i]);
     }
+
+    return 0;
+}
+
+int insert_value_same_key_should_replace_the_value(void *params) {
+    BST_t *tree = params;
+    int key = 4;
+    int oldValue = 4;
+    int newValue = 10;
+    int res;
+    
+    insert(tree, key, oldValue);
+    insert(tree, key, newValue);
+
+    ASSERT_TRUE(find_value(tree, key, &res) == 0);
+    ASSERT_EQUALS(res, newValue);
 
     return 0;
 }
@@ -82,6 +99,7 @@ int main() {
     ADD_TEST(tests, insert_higher_key_value_than_root_should_create_a_subtree_right);
     ADD_TEST(tests, find_value_in_a_just_create_bst_should_find_the_root_specified);
     ADD_TEST(tests, find_value_after_insert);
+    ADD_TEST(tests, insert_value_same_key_should_replace_the_value);
 
     run_tests(tests, beforeEach, afterEach);
     free_test_list(tests);
