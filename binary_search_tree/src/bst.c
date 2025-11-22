@@ -28,6 +28,12 @@ void insert(BST_t *bst, int key, int value){
                 return;
             }
             current = current->left;
+        }else {
+            if(current->right == NULL){
+                current->right = insert;
+                return;
+            }
+            current = current->right;
         }
     }
 }

@@ -51,6 +51,7 @@ int main() {
 
     ADD_TEST(tests, create_bst_create_a_tree_with_the_root_specified);
     ADD_TEST(tests, insert_lower_key_value_than_root_should_create_a_subtree_left);
+    ADD_TEST(tests, insert_higher_key_value_than_root_should_create_a_subtree_right);
 
     run_tests(tests, beforeEach, afterEach);
     free_test_list(tests);
