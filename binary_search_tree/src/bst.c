@@ -7,35 +7,28 @@ BST_t *create_bst(int key, int value){
     return bst;
 }
 
-void init_bst(BST_t *bst, int key, int value){
-    bst->key = key;
-    bst->value = value;
-    bst->left = NULL;
-    bst->right = NULL;
+void init_bst(BST_t *root, int key, int value){
+    root->key = key;
+    root->value = value;
+    root->left = NULL;
+    root->right = NULL;
 }
 
-void free_bst(BST_t *bst){
-    free(bst);
+void free_bst(BST_t *root){
+    free(root);
 }
 
-void insert(BST_t *bst, int key, int value){
-    BST_t *current = bst;
-    BST_t *insert = create_bst(key, value);
-    while(1) {
-        if(key <= current->key){
-            if(current->left == NULL){
-                current->left = insert;
-                return;
-            }
-            current = current->left;
-        }else {
-            if(current->right == NULL){
-                current->right = insert;
-                return;
-            }
-            current = current->right;
-        }
-    }
+BST_t *insert(BST_t *root, int key, int value){
+
+    if(root == NULL)
+        return create_bst(key, value);
+
+    if(key <= root->key)
+        root->left = insert(root->left, key, value);
+    else
+        root->right = insert(root->right, key, value);
+
+    return root;
 }
 
 int find_value(const BST_t *bst, int key, int *value){
