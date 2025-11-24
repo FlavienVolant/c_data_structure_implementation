@@ -329,6 +329,28 @@ int put_struct_key_and_value(void *params) {
     return 0;
 }
 
+int clear_map_should_remove_every_entree(void *params) {
+
+    Hashmap_t *map = params;
+
+    for(int i = 0; i < 200; i ++) {
+        int key = i*i;
+        int value = i*i*i;
+        ASSERT_EQUALS(put(map, &key, &value), SUCCESS);
+    }
+    
+    clear(map);
+
+    for(int i = 0; i < 200; i ++) {
+        int key = i*i;
+        int value = -1;
+        ASSERT_EQUALS(get(map, &key, (void**)&value), KEY_UNKNOW);
+        ASSERT_EQUALS(value, -1);
+    }
+
+    return 0;
+}
+
 int main() {
     struct TestList *tests = create_test_list();
 
@@ -346,6 +368,7 @@ int main() {
     ADD_TEST(tests, insert_many_keys_with_identical_cstring_content_but_different_addresses);
     ADD_TEST(tests, put_string_key_put_get_delete_value);
     ADD_TEST(tests, put_struct_key_and_value);
+    ADD_TEST(tests, clear_map_should_remove_every_entree);
 
     run_tests(tests, beforeEach, afterEach);
     free_test_list(tests);

@@ -47,6 +47,7 @@ HashMapReturnValue_e put(Hashmap_t *map, void *key, void *value);
 HashMapReturnValue_e get(Hashmap_t *map, void *key, void **res);
 HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res);
 
+void clear(Hashmap_t *map);
 Node_t* get_keys_as_array(const Hashmap_t *map, int *count);
 void free_keys(const Hashmap_t *map, Node_t* keys, int count);
 

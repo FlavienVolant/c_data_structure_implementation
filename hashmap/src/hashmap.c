@@ -152,7 +152,17 @@ HashMapReturnValue_e del(Hashmap_t *map, void *key, void **res) {
     return KEY_UNKNOW;
 }
 
-Node_t* get_keys_as_array(const Hashmap_t *map, int *count) {
+void clear(Hashmap_t *map){
+
+    for(int i = 0; i < map->capacity; i ++) {
+        Node_t *current = map->table[i];
+        free_nodes(map, current);
+        map->table[i] = NULL;
+    }
+}
+
+Node_t *get_keys_as_array(const Hashmap_t *map, int *count)
+{
     *count = map->keyCount;
 
     if(map->keyCount == 0)
