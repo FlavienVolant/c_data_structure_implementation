@@ -38,17 +38,17 @@ BST_t *insert(BST_t *root, int key, int value){
     return root;
 }
 
-int find_value(const BST_t *root, int key, int *value){
+BST_RETURN_VALUE_e get(const BST_t *root, int key, int *value){
     while (root != NULL) {
         if (key == root->key){
             if(value != NULL) 
                 *value = root->value;
-            return 0;
+            return SUCCESS;
         }
         else if (key < root->key)
             root = root->left;
         else
             root = root->right;
     }
-    return 1;
+    return KEY_UNKNOWN;
 }

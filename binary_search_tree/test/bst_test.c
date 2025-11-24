@@ -50,7 +50,7 @@ int find_value_in_a_just_create_bst_should_find_the_root_specified(void *params)
     BST_t *tree = params;
     int res;
     
-    ASSERT_TRUE(find_value(tree, 5, &res) == 0);
+    ASSERT_TRUE(get(tree, 5, &res) == 0);
     ASSERT_EQUALS(res, 5);
 
     return 0;
@@ -68,7 +68,7 @@ int find_value_after_insert(void *params) {
     } 
     
     for(int i = 0; i < 9; i ++) {
-        ASSERT_TRUE(find_value(tree, keys[i], &res) == 0);
+        ASSERT_TRUE(get(tree, keys[i], &res) == 0);
         ASSERT_EQUALS(res, values[i]);
     }
 
@@ -85,7 +85,7 @@ int insert_value_same_key_should_replace_the_value(void *params) {
     insert(tree, key, oldValue);
     insert(tree, key, newValue);
 
-    ASSERT_TRUE(find_value(tree, key, &res) == 0);
+    ASSERT_TRUE(get(tree, key, &res) == 0);
     ASSERT_EQUALS(res, newValue);
 
     return 0;
